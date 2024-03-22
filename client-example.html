@@ -7,9 +7,9 @@
 <h2>Task Updates</h2>
 <div id="updates"></div>
 <script>
-    const taskId = '123'; // Example task ID
+    const roomId = '123'; // Example task ID
     const sessionId = '4341431313'; // Example session ID
-    const evtSource = new EventSource(`http://localhost:8081/events?taskId=${taskId}&sessionId=${sessionId}`);
+    const evtSource = new EventSource(`http://localhost:8081/events?roomId=${roomId}&sessionId=${sessionId}`);
 
     evtSource.onmessage = function(event) {
         const updates = document.getElementById('updates');

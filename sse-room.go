@@ -10,11 +10,11 @@ import (
 
 type Client struct {
 	channel chan string
-	taskId  string
+	roomId  string
 }
 
 type SSEMessage struct {
-	taskId  string
+	roomId  string
 	message string
 }
 
@@ -72,7 +72,7 @@ func (b *SSEBroker) listen() {
 			b.clientsMutex.Unlock()
 		case taskMsg := <-b.messages:
 			for client := range b.clients {
-				if client.taskId == taskMsg.taskId {
+				if client.roomId == taskMsg.roomId {
 					select {
 					case client.channel <- taskMsg.message:
 					default:
@@ -90,9 +90,9 @@ func (b *SSEBroker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	sessionId := r.URL.Query().Get("sessionId")
 	slog.Info("Auth token", "authToken", sessionId)
-	// Extract taskId from query params or other means
-	taskId := r.URL.Query().Get("taskId")
-	if taskId == "" {
+	// Extract roomId from query params or other means
+	roomId := r.URL.Query().Get("roomId")
+	if roomId == "" {
 		http.Error(w, "Task ID required", http.StatusBadRequest)
 		return
 	}
@@ -106,7 +106,7 @@ func (b *SSEBroker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Setup client for this connection
 	clientChan := make(chan string)
-	client := Client{channel: clientChan, taskId: taskId}
+	client := Client{channel: clientChan, roomId: roomId}
 	b.addClient <- client
 	defer func() {
 		slog.Info("Closing client connection")
@@ -129,7 +129,7 @@ func (b *SSEBroker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b *SSEBroker) Broadcast(taskId, msg string) {
-	b.messages <- SSEMessage{taskId: taskId, message: msg}
+	b.messages <- SSEMessage{roomId: taskId, message: msg}
 }
 
 func (b *SSEBroker) Shutdown() {

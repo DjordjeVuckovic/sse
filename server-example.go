@@ -38,7 +38,7 @@ func main() {
 		w.Write([]byte("Live!"))
 	})
 	server.HandleFunc("GET /broadcast", func(w http.ResponseWriter, r *http.Request) {
-		taskId := r.URL.Query().Get("taskId")
+		taskId := r.URL.Query().Get("roomId")
 		if taskId == "" {
 			http.Error(w, "Task ID is required", http.StatusBadRequest)
 			return
